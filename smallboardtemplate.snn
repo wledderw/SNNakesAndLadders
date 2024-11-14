@@ -1,0 +1,327 @@
+{
+  "nodes": [
+    {
+      "id": 24,
+      "type": "lif",
+      "read_out": false,
+      "name": "1",
+      "x": 170,
+      "y": 483,
+      "amplitude": 1,
+      "m": "1",
+      "V_init": "1",
+      "V_reset": 0,
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 25,
+      "type": "lif",
+      "read_out": false,
+      "name": "3",
+      "x": 669,
+      "y": 486,
+      "amplitude": 1,
+      "m": "1",
+      "V_init": "0",
+      "V_reset": 0,
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 26,
+      "type": "lif",
+      "read_out": false,
+      "name": "2",
+      "x": 426,
+      "y": 544,
+      "amplitude": 1,
+      "m": "0",
+      "V_init": 0,
+      "V_reset": 0,
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 27,
+      "type": "lif",
+      "read_out": false,
+      "name": "8",
+      "x": 424,
+      "y": 46,
+      "amplitude": 1,
+      "m": "0",
+      "V_init": 0,
+      "V_reset": 0,
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 28,
+      "type": "lif",
+      "read_out": false,
+      "name": "7",
+      "x": 170,
+      "y": 101,
+      "amplitude": 1,
+      "m": "1",
+      "V_init": 0,
+      "V_reset": "",
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 29,
+      "type": "lif",
+      "read_out": false,
+      "name": "6",
+      "x": 170,
+      "y": 273,
+      "amplitude": 1,
+      "m": "1",
+      "V_init": 0,
+      "V_reset": "",
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 30,
+      "type": "lif",
+      "read_out": false,
+      "name": "4",
+      "x": 666,
+      "y": 279,
+      "amplitude": 1,
+      "m": "1",
+      "V_init": 0,
+      "V_reset": "",
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 31,
+      "type": "lif",
+      "read_out": true,
+      "name": "9",
+      "x": 670,
+      "y": 93,
+      "amplitude": 1,
+      "m": "1",
+      "V_init": 0,
+      "V_reset": "",
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    },
+    {
+      "id": 32,
+      "type": "lif",
+      "read_out": false,
+      "name": "5",
+      "x": 429,
+      "y": 278,
+      "amplitude": 1,
+      "m": "1",
+      "V_init": 0,
+      "V_reset": "",
+      "V_min": 0,
+      "thr": 1,
+      "I_e": 0,
+      "noise": 0,
+      "rng": ""
+    }
+  ],
+  "synapses": [
+    {
+      "id": 38,
+      "pre": 24,
+      "post": 25,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 39,
+      "pre": 24,
+      "post": 30,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 40,
+      "pre": 24,
+      "post": 32,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 41,
+      "pre": 24,
+      "post": 29,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 42,
+      "pre": 25,
+      "post": 30,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 43,
+      "pre": 25,
+      "post": 32,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 44,
+      "pre": 25,
+      "post": 29,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 45,
+      "pre": 25,
+      "post": 28,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 46,
+      "pre": 30,
+      "post": 32,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 47,
+      "pre": 30,
+      "post": 29,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 48,
+      "pre": 30,
+      "post": 28,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 49,
+      "pre": 30,
+      "post": 25,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 50,
+      "pre": 32,
+      "post": 29,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 51,
+      "pre": 32,
+      "post": 28,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 53,
+      "pre": 32,
+      "post": 31,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 54,
+      "pre": 32,
+      "post": 25,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 55,
+      "pre": 29,
+      "post": 28,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 56,
+      "pre": 29,
+      "post": 25,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 57,
+      "pre": 29,
+      "post": 31,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 58,
+      "pre": 28,
+      "post": 25,
+      "w": 1,
+      "d": 1
+    },
+    {
+      "id": 59,
+      "pre": 28,
+      "post": 31,
+      "w": 1,
+      "d": 1
+    }
+  ],
+  "maxNodeId": 32,
+  "maxSynapseId": 59,
+  "duration": "10",
+  "config": {
+    "nodeFeatures": {
+      "V_min": false,
+      "amplitude": false,
+      "I_e": false,
+      "noise": false,
+      "rng": false
+    },
+    "synapseRules": {
+      "selfLoops": true,
+      "synapseBundles": false
+    },
+    "loihi": {
+      "loihiRestrictions": false,
+      "loihiExecution": false,
+      "matchWithSimulator": false
+    }
+  }
+}

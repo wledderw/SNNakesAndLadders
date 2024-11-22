@@ -48,6 +48,9 @@ class Simulator:
         inet_str += self.raster.to_inet_string() + "\n\n"
         inet_str += self.multimeter.to_inet_string() + "\n\n"
         return inet_str
+    
+    def get_raster_data(self):
+        return self.raster.get_measurements()
 
     def print_detectors(self, steps, options):
         rasterdata = self.raster.get_measurements()

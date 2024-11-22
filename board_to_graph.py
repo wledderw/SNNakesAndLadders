@@ -4,9 +4,9 @@ import argparse
 def make_base_connections(nr_cells, nr_dice_sides):
     connections = []
     for cell in range(1, nr_cells+1):
-        for reached in range(cell+1, cell+nr_dice_sides+1):
-            if reached <= nr_cells:
-                connections.append((cell, reached))
+        for throw in range(1, nr_dice_sides+1):
+            if cell+throw <= nr_cells:
+                connections.append((cell, cell+throw, throw))
     return connections
 
 def add_ladders(connections, ladder_starts, ladder_ends):
@@ -14,7 +14,7 @@ def add_ladders(connections, ladder_starts, ladder_ends):
     for con in connections:
         if con[1] in ladder_starts:
             ind = ladder_starts.index(con[1])
-            modified_connections.append((con[0], ladder_ends[ind]))
+            modified_connections.append((con[0], ladder_ends[ind], con[2]))
         elif not (con[0] in ladder_starts):
             modified_connections.append(con)
     return modified_connections
@@ -24,7 +24,7 @@ def add_snakes(connections, snake_starts, snake_ends):
     for con in connections:
         if con[1] in snake_starts:
             ind = snake_starts.index(con[1])
-            modified_connections.append((con[0], snake_ends[ind]))
+            modified_connections.append((con[0], snake_ends[ind], con[2]))
         elif not (con[0] in snake_starts):
             modified_connections.append(con)
 
@@ -49,6 +49,7 @@ if __name__ == "__main__":
     base_connections = make_base_connections(args.nr_cells, args.nr_dice_sides)
     connections = add_ladders(base_connections, args.ladder_starts, args.ladder_ends)
     final_connections = add_snakes(connections, args.snake_starts, args.snake_ends)
+    print(final_connections)
     network = connections_to_graph(final_connections)
 
     # Example usage (using the board from my notebook):

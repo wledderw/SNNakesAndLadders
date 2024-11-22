@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "simsnn"
+version = "1.0.2"
+authors = [
+  { name="Arne Diehl", email="arne.diehl@donders.ru.nl" },
+]
+description = "Radboud Spiking Neural Network Simulator"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://gitlab.socsci.ru.nl/neuromorphiccomputing/simsnn"
+"Bug Tracker" = "https://gitlab.socsci.ru.nl/neuromorphiccomputing/simsnn/-/issues"

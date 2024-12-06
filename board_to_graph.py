@@ -1,7 +1,7 @@
 import argparse
 from simsnn.core.networks import Network
 from simsnn.core.simulators import Simulator
-
+import numpy as np
 
 def make_base_connections(nr_cells, nr_dice_sides):
     connections = []
@@ -59,19 +59,19 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
 
         #Synapse between board neurons and read_out neurons, -2 because the starting cell does not need read-out neurons
         read_index = (post_neuron-2)*nr_dice_sides+(throw-1)
-        print(post_neuron, nr_dice_sides, read_index)
+        # print(post_neuron, nr_dice_sides, read_index)
         net.createSynapse(pre=board_neurons[start_neuron-1], post=read_neurons[read_index], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
 
         #Create read out neurons/synapses to check if a ladder/snake was used.
         if post_neuron-start_neuron != throw:
             #If ladder
             if post_neuron-start_neuron > throw:
-                ladder_read_neuron = net.createLIF(ID=f"RL{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
+                ladder_read_neuron = net.createLIF(ID=f"L{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
                 ladder_read_neurons.append(ladder_read_neuron)
                 net.createSynapse(pre=board_neurons[start_neuron-1], post=ladder_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
             #If snake
             elif post_neuron-start_neuron < throw:
-                snake_read_neuron = net.createLIF(ID=f"RS{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
+                snake_read_neuron = net.createLIF(ID=f"S{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
                 snake_read_neurons.append(snake_read_neuron)
                 net.createSynapse(pre=board_neurons[start_neuron-1], post=snake_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
     
@@ -80,9 +80,66 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
     sim.raster.addTarget(ladder_read_neurons)
     sim.raster.addTarget(snake_read_neurons)
 
-def get_shortest_path(raster_data, ladder_starts, ladder_ends, snake_starts, snake_ends):
-    print(raster_data)
+def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends):
+    # Get raster and label data:
+    raster = np.array(sim.get_raster_data()).T
+    labels = sim.raster.get_labels()
 
+    # Make a list of nodes and a dictionary of nodes with their edges:
+    nodes = [int(nr[1:]) for nr in labels if nr[0] == 'B']
+    edges = dict()
+    for node in nodes:
+        edges[node] = [edge for edge in labels if edge.split('-')[0][0] != 'B' and int(edge.split('-')[0][1:]) == node]
+
+    # Find final node:
+    final_node = max(nodes)
+
+    # Find final timestep:
+    t = np.where(raster[final_node - 1])[0][0]
+
+    # Initialize the list of dice throws:
+    dice_throws = []
+
+    # Backtrack the spiked neurons:
+    node = final_node
+    while node != 1 and t >= 0:  # Backtrack back until the start of simulation
+        node_edges = edges[node]  # Get the edges of this node
+        diff = 0
+
+        # We want to get an edge that got to this node, but there should be
+        # priority for snakes and ladders:
+        node_edge = ""
+        for potential_node_edge in node_edges:
+            row = labels.index(potential_node_edge)
+            if raster[row, t] and node_edge == "":
+                node_edge = potential_node_edge
+            elif raster[row, t] and potential_node_edge[0] == 'S':
+                node_edge = potential_node_edge
+            elif raster[row, t] and potential_node_edge[0] == 'L':
+                node_edge = potential_node_edge
+
+        # If this node is a ladder end:
+        if node_edge[0] == 'L':
+            end = node
+            start = ladder_starts[ladder_ends.index(end)]
+            diff = end - start  # Extra moves because of ladder
+
+        # If this node is a snake start:
+        if node_edge[0] == 'S':
+            # if node in snake_starts:
+            start = node
+            end = snake_starts[snake_ends.index(start)]
+            diff = start - end  # Extra (negative) moves because of snake
+
+        # Get dice throw and add to history list:
+        dice = int(node_edge.split('-')[1][1:])
+        dice_throws.append(dice)
+
+        # Go to new node and new timestep:
+        node -= (diff + dice)
+        t -= 1
+
+    return dice_throws[::-1]
 
 
 if __name__ == "__main__":
@@ -92,10 +149,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--nr_cells', type=int, default=10)
     parser.add_argument('--nr_dice_sides', type=int, default=4)
-    parser.add_argument('--snake_starts', type=list_of_ints)
-    parser.add_argument('--snake_ends', type=list_of_ints)
-    parser.add_argument('--ladder_starts', type=list_of_ints)
-    parser.add_argument('--ladder_ends', type=list_of_ints)
+    parser.add_argument('--snake_starts', type=list_of_ints, default=[8])
+    parser.add_argument('--snake_ends', type=list_of_ints, default=[3])
+    parser.add_argument('--ladder_starts', type=list_of_ints, default=[2])
+    parser.add_argument('--ladder_ends', type=list_of_ints, default=[6])
     args = parser.parse_args()
 
     # Create the network and the simulator object
@@ -105,13 +162,14 @@ if __name__ == "__main__":
     base_connections = make_base_connections(args.nr_cells, args.nr_dice_sides)
     connections = add_ladders(base_connections, args.ladder_starts, args.ladder_ends)
     final_connections = add_snakes(connections, args.snake_starts, args.snake_ends)
-    print(final_connections)
-    network = connections_to_graph(args.nr_cells, args.nr_dice_sides, final_connections, net , sim)
+    network = connections_to_graph(args.nr_cells, args.nr_dice_sides, final_connections, net, sim)
 
     sim.run(args.nr_cells, plotting=True)
 
-    raster_data = sim.get_raster_data()
-    get_shortest_path(raster_data, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
+    dice_throws = get_shortest_path(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
+    print(dice_throws)
 
     # Example usage (using the board from my notebook):
     # python board_to_graph.py --nr_cells 9 --nr_dice_sides 4 --ladder_starts 2 --ladder_ends 6 --snake_starts 8 --snake_ends 3
+    # python board_to_graph.py --nr_cells 20 --nr_dice_sides 2 --ladder_starts 2,9 --ladder_ends 12,19 --snake_starts 13 --snake_ends 8
+    # python board_to_graph.py --nr_cells 100 --nr_dice_sides 6 --ladder_starts 1,4,8,21,28,50,71,80 --ladder_ends 38,14,20,42,76,67,92,99 --snake_starts 32,36,48,62,88,95,97 --snake_ends 10,6,26,18,24,56,78

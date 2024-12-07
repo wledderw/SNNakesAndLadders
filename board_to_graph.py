@@ -99,6 +99,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
 
     # Initialize the list of dice throws:
     dice_throws = []
+    log = [f"You reached the finish by reaching final space {final_node}."]
 
     # Backtrack the spiked neurons:
     node = final_node
@@ -123,6 +124,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
             end = node
             start = ladder_starts[ladder_ends.index(end)]
             diff = end - start  # Extra moves because of ladder
+            log.append(f"Now, you are on {start}, from where you can take a ladder.")
 
         # If this node is a snake start:
         if node_edge[0] == 'S':
@@ -130,6 +132,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
             start = node
             end = snake_starts[snake_ends.index(start)]
             diff = start - end  # Extra (negative) moves because of snake
+            log.append(f"Now, you are on {end}, from where you have to take a snake.")
 
         # Get dice throw and add to history list:
         dice = int(node_edge.split('-')[1][1:])
@@ -139,7 +142,14 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
         node -= (diff + dice)
         t -= 1
 
-    return dice_throws[::-1]
+        log.append(f"You throw a {dice}.")
+        if node != 1:
+            log.append(f"You are now on space {node}.")
+        else:
+            log.append("You start on space 1.")
+
+
+    return dice_throws[::-1], log[::-1]#.append("You reached the goal!")
 
 
 if __name__ == "__main__":
@@ -166,8 +176,10 @@ if __name__ == "__main__":
 
     sim.run(args.nr_cells, plotting=True)
 
-    dice_throws = get_shortest_path(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
-    print(dice_throws)
+    dice_throws, log = get_shortest_path(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
+    print("Dice throws:", dice_throws, end="\n\n")
+    for info in log:
+        print(info)
 
     # Example usage (using the board from my notebook):
     # python board_to_graph.py --nr_cells 9 --nr_dice_sides 4 --ladder_starts 2 --ladder_ends 6 --snake_starts 8 --snake_ends 3

@@ -75,10 +75,11 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
         else:
             net.createSynapse(pre=board_neurons[start_neuron], post=read_neurons[read_index], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
     
-    sim.raster.addTarget(board_neurons)
+    
     sim.raster.addTarget(read_neurons)
     sim.raster.addTarget(ladder_read_neurons)
     sim.raster.addTarget(snake_read_neurons)
+    sim.raster.addTarget(board_neurons)
 
 def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends):
     # Get raster and label data:

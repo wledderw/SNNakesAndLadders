@@ -57,7 +57,7 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
         #Synapse between board neurons and read_out neurons, -2 because the starting cell does not need read-out neurons
         read_index = (post_neuron-1)*nr_dice_sides+(throw-1)
         # print(post_neuron, nr_dice_sides, read_index)
-        net.createSynapse(pre=board_neurons[start_neuron], post=read_neurons[read_index], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+        
 
         #Create read out neurons/synapses to check if a ladder/snake was used.
         if post_neuron-start_neuron != throw:
@@ -71,6 +71,9 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
                 snake_read_neuron = net.createLIF(ID=f"S{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
                 snake_read_neurons.append(snake_read_neuron)
                 net.createSynapse(pre=board_neurons[start_neuron], post=snake_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+
+        else:
+            net.createSynapse(pre=board_neurons[start_neuron], post=read_neurons[read_index], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
     
     sim.raster.addTarget(board_neurons)
     sim.raster.addTarget(read_neurons)

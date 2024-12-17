@@ -65,12 +65,12 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
             if post_neuron-start_neuron > throw:
                 ladder_read_neuron = net.createLIF(ID=f"L{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
                 ladder_read_neurons.append(ladder_read_neuron)
-                net.createSynapse(pre=board_neurons[start_neuron-1], post=ladder_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+                net.createSynapse(pre=board_neurons[start_neuron], post=ladder_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
             #If snake
             elif post_neuron-start_neuron < throw:
                 snake_read_neuron = net.createLIF(ID=f"S{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
                 snake_read_neurons.append(snake_read_neuron)
-                net.createSynapse(pre=board_neurons[start_neuron-1], post=snake_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+                net.createSynapse(pre=board_neurons[start_neuron], post=snake_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
     
     sim.raster.addTarget(board_neurons)
     sim.raster.addTarget(read_neurons)
@@ -140,7 +140,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
         # Get dice throw and add to history list:
         dice = int(node_edge.split('-')[1][1:])
         dice_throws.append(dice)
-
+        print("dice: " + str(dice))
         # Go to new node and new timestep:
         node -= (diff + dice)
         t -= 1

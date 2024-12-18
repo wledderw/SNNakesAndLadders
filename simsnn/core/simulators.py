@@ -35,10 +35,13 @@ class Simulator:
         self.raster.initialize(steps)
         self.multimeter.initialize(steps)
 
-        for _ in range(steps):
+        for i in range(steps):
             self.network.step()
             self.raster.step()
             self.multimeter.step()
+            raster = self.raster.get_measurements()
+            if raster[i][-1]:
+                break
 
         if plotting:
             self.print_detectors(steps, options)

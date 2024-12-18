@@ -5,7 +5,7 @@ import numpy as np
 
 def make_base_connections(nr_cells, nr_dice_sides):
     connections = []
-    for cell in range(1, nr_cells+1):
+    for cell in range(0, nr_cells+1):
         for throw in range(1, nr_dice_sides+1):
             if cell+throw <= nr_cells:
                 connections.append((cell, cell+throw, throw))
@@ -35,19 +35,16 @@ def add_snakes(connections, snake_starts, snake_ends):
 def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
     board_neurons = []
     read_neurons = []
+    start_neuron = net.createInputTrain(train=[1], loop=False, ID="B0")
+    board_neurons.append(start_neuron)
     for c in range(nr_cells):
-        if c == 0:
-            start_neuron = net.createInputTrain(train=[1, 0, 0, 0], loop=False, ID="B1")
-            board_neurons.append(start_neuron)
-            # sim.raster.addTarget(start_neuron)
-        else:
-            #Adding a neuron for each square on the board
-            neuron = net.createLIF(ID=f"B{c+1}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
-            board_neurons.append(neuron)
-            for d in range(nr_dice_sides):
-                #Adding read out neurons to track what throw was used to get there
-                read_neuron = net.createLIF(ID=f"R{c+1}-D{d+1}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
-                read_neurons.append(read_neuron)
+        #Adding a neuron for each square on the board
+        neuron = net.createLIF(ID=f"B{c+1}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
+        board_neurons.append(neuron)
+        for d in range(nr_dice_sides):
+            #Adding read out neurons to track what throw was used to get there
+            read_neuron = net.createLIF(ID=f"R{c+1}-D{d+1}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
+            read_neurons.append(read_neuron)
 
     #adding synapses and ladder/snake neurons
     ladder_read_neurons = []
@@ -55,12 +52,12 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
     for c in connections:
         (start_neuron, post_neuron, throw) = c
         #Synapse between board neurons
-        net.createSynapse(pre=board_neurons[start_neuron-1], post=board_neurons[post_neuron-1], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+        net.createSynapse(pre=board_neurons[start_neuron], post=board_neurons[post_neuron], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
 
         #Synapse between board neurons and read_out neurons, -2 because the starting cell does not need read-out neurons
-        read_index = (post_neuron-2)*nr_dice_sides+(throw-1)
+        read_index = (post_neuron-1)*nr_dice_sides+(throw-1)
         # print(post_neuron, nr_dice_sides, read_index)
-        net.createSynapse(pre=board_neurons[start_neuron-1], post=read_neurons[read_index], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+        
 
         #Create read out neurons/synapses to check if a ladder/snake was used.
         if post_neuron-start_neuron != throw:
@@ -68,17 +65,21 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
             if post_neuron-start_neuron > throw:
                 ladder_read_neuron = net.createLIF(ID=f"L{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
                 ladder_read_neurons.append(ladder_read_neuron)
-                net.createSynapse(pre=board_neurons[start_neuron-1], post=ladder_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+                net.createSynapse(pre=board_neurons[start_neuron], post=ladder_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
             #If snake
             elif post_neuron-start_neuron < throw:
                 snake_read_neuron = net.createLIF(ID=f"S{post_neuron}-D{throw}", thr=nr_cells*nr_dice_sides+1, V_reset=0, m=1, V_init=nr_cells*nr_dice_sides)
                 snake_read_neurons.append(snake_read_neuron)
-                net.createSynapse(pre=board_neurons[start_neuron-1], post=snake_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+                net.createSynapse(pre=board_neurons[start_neuron], post=snake_read_neuron, ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
+
+        else:
+            net.createSynapse(pre=board_neurons[start_neuron], post=read_neurons[read_index], ID=f"s{start_neuron}, p{post_neuron}, d{throw}", w=1, d=1)
     
-    sim.raster.addTarget(board_neurons)
+    
     sim.raster.addTarget(read_neurons)
     sim.raster.addTarget(ladder_read_neurons)
     sim.raster.addTarget(snake_read_neurons)
+    sim.raster.addTarget(board_neurons)
 
 def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends):
     # Get raster and label data:
@@ -93,9 +94,8 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
 
     # Find final node:
     final_node = max(nodes)
-
     # Find final timestep:
-    t = np.where(raster[final_node - 1])[0][0]
+    t = np.where(raster[-1])[0][0]
 
     # Initialize the list of dice throws:
     dice_throws = []
@@ -103,7 +103,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
 
     # Backtrack the spiked neurons:
     node = final_node
-    while node != 1 and t >= 0:  # Backtrack back until the start of simulation
+    while node != 0 and t >= 0:  # Backtrack back until the start of simulation
         node_edges = edges[node]  # Get the edges of this node
         diff = 0
 
@@ -137,16 +137,15 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
         # Get dice throw and add to history list:
         dice = int(node_edge.split('-')[1][1:])
         dice_throws.append(dice)
-
         # Go to new node and new timestep:
         node -= (diff + dice)
         t -= 1
 
         log.append(f"You throw a {dice}.")
-        if node != 1:
+        if node != 0:
             log.append(f"You are now on space {node}.")
         else:
-            log.append("You start on space 1.")
+            log.append("You start on space 0.")
 
 
     return dice_throws[::-1], log[::-1]#.append("You reached the goal!")
@@ -157,7 +156,7 @@ if __name__ == "__main__":
         return list(map(int, arg.split(',')))
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--nr_cells', type=int, default=10)
+    parser.add_argument('--nr_cells', type=int, default=9)
     parser.add_argument('--nr_dice_sides', type=int, default=4)
     parser.add_argument('--snake_starts', type=list_of_ints, default=[8])
     parser.add_argument('--snake_ends', type=list_of_ints, default=[3])
@@ -174,7 +173,7 @@ if __name__ == "__main__":
     final_connections = add_snakes(connections, args.snake_starts, args.snake_ends)
     network = connections_to_graph(args.nr_cells, args.nr_dice_sides, final_connections, net, sim)
 
-    sim.run(args.nr_cells, plotting=True)
+    sim.run(args.nr_cells, plotting=False)
 
     dice_throws, log = get_shortest_path(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
     print("Dice throws:", dice_throws, end="\n\n")

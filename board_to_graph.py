@@ -95,7 +95,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
     # Find final node:
     final_node = max(nodes)
     # Find final timestep:
-    t = np.where(raster[final_node])[0][0]
+    t = np.where(raster[-1])[0][0]
 
     # Initialize the list of dice throws:
     dice_throws = []
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     final_connections = add_snakes(connections, args.snake_starts, args.snake_ends)
     network = connections_to_graph(args.nr_cells, args.nr_dice_sides, final_connections, net, sim)
 
-    sim.run(args.nr_cells, plotting=True)
+    sim.run(args.nr_cells, plotting=False)
 
     dice_throws, log = get_shortest_path(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
     print("Dice throws:", dice_throws, end="\n\n")

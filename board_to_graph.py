@@ -84,7 +84,6 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
     # Get raster and label data:
     raster = np.array(sim.get_raster_data()).T
     labels = sim.raster.get_labels()
-    print(labels)
 
     # Make a list of nodes and a dictionary of nodes with their edges:
     nodes = [int(nr[1:]) for nr in labels if nr[0] == 'B']
@@ -94,7 +93,6 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
 
     # Find final node:
     final_node = max(nodes)
-    print(final_node)
     # Find final timestep:
     t = np.where(raster[final_node])[0][0]
 
@@ -105,10 +103,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
     # Backtrack the spiked neurons:
     node = final_node
     while node != 0 and t >= 0:  # Backtrack back until the start of simulation
-        print("test")
-        print(node)
         node_edges = edges[node]  # Get the edges of this node
-        print(node_edges)
         diff = 0
 
         # We want to get an edge that got to this node, but there should be
@@ -124,8 +119,6 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
                 node_edge = potential_node_edge
 
         # If this node is a ladder end:
-        
-        print(node_edge[0])
         if node_edge[0] == 'L':
             end = node
             start = ladder_starts[ladder_ends.index(end)]
@@ -143,7 +136,6 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
         # Get dice throw and add to history list:
         dice = int(node_edge.split('-')[1][1:])
         dice_throws.append(dice)
-        print("dice: " + str(dice))
         # Go to new node and new timestep:
         node -= (diff + dice)
         t -= 1

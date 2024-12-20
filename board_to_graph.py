@@ -107,16 +107,10 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
         node_edges = edges[node]  # Get the edges of this node
         diff = 0
 
-        # We want to get an edge that got to this node, but there should be
-        # priority for snakes and ladders:
-        node_edge = ""
+        node_edge = None
         for potential_node_edge in node_edges:
             row = labels.index(potential_node_edge)
-            if raster[row, t] and node_edge == "":
-                node_edge = potential_node_edge
-            elif raster[row, t] and potential_node_edge[0] == 'S':
-                node_edge = potential_node_edge
-            elif raster[row, t] and potential_node_edge[0] == 'L':
+            if raster[row, t]:
                 node_edge = potential_node_edge
 
         # If this node is a ladder end:
@@ -124,7 +118,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
             end = node
             start = ladder_starts[ladder_ends.index(end)]
             diff = end - start  # Extra moves because of ladder
-            log.append(f"Now, you are on {start}, from where you can take a ladder.")
+            log.append(f"Now, you are on {start}, take a ladder from here.")
 
         # If this node is a snake start:
         if node_edge[0] == 'S':
@@ -132,7 +126,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
             start = node
             end = snake_starts[snake_ends.index(start)]
             diff = start - end  # Extra (negative) moves because of snake
-            log.append(f"Now, you are on {end}, from where you have to take a snake.")
+            log.append(f"Now, you are on {end}, take a snake from here.")
 
         # Get dice throw and add to history list:
         dice = int(node_edge.split('-')[1][1:])
@@ -148,7 +142,7 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
             log.append("You start on space 0.")
 
 
-    return dice_throws[::-1], log[::-1]#.append("You reached the goal!")
+    return dice_throws[::-1], log[::-1]
 
 
 if __name__ == "__main__":
@@ -184,3 +178,4 @@ if __name__ == "__main__":
     # python board_to_graph.py --nr_cells 9 --nr_dice_sides 4 --ladder_starts 2 --ladder_ends 6 --snake_starts 8 --snake_ends 3
     # python board_to_graph.py --nr_cells 20 --nr_dice_sides 2 --ladder_starts 2,9 --ladder_ends 12,19 --snake_starts 13 --snake_ends 8
     # python board_to_graph.py --nr_cells 100 --nr_dice_sides 6 --ladder_starts 1,4,8,21,28,50,71,80 --ladder_ends 38,14,20,42,76,67,92,99 --snake_starts 32,36,48,62,88,95,97 --snake_ends 10,6,26,18,24,56,78
+    # python board_to_graph.py --nr_cells 6 --nr_dice_sides 2 --ladder_starts 2 --ladder_ends 4 --snake_starts 5 --snake_ends 1

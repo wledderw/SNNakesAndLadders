@@ -145,6 +145,110 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
     return dice_throws[::-1], log[::-1]
 
 
+def get_all_shortest_paths(sim, ladder_starts, ladder_ends, snake_starts, snake_ends):
+    # Get raster and label data:
+    raster = np.array(sim.get_raster_data()).T
+    labels = sim.raster.get_labels()
+
+    # Make a list of nodes and a dictionary of nodes with their edges:
+    nodes = [int(nr[1:]) for nr in labels if nr[0] == 'B']
+    edges = dict()
+    for node in nodes:
+        edges[node] = [edge for edge in labels if edge.split('-')[0][0] != 'B' and int(edge.split('-')[0][1:]) == node]
+
+    # Find final node:
+    final_node = max(nodes)
+    # Find final timestep:
+    t = np.where(raster[-1])[0][0]
+
+    # Initialize the list of dice throws:
+    dice_throws = []
+    log = [f"You reached the finish by reaching final space {final_node}."]
+
+    logs = []
+    dice_throws_list = []
+
+    # Backtrack the spiked neurons:
+    node = final_node
+
+
+    def get_all_paths(node, log, dice_throws, grid, t):
+        # Count amount of options we have to get to the current node:
+        count = 0
+        for edge in edges[node]:
+            if grid[labels.index(edge), t]:
+                count += 1
+
+        # Base case: we reached the start
+        if node == 0 and t == 0:
+            logs.append(log[::-1])
+            dice_throws_list.append(dice_throws[::-1])
+            return
+
+        # Step case: there is just one activation for the current time step
+        elif count == 1:
+            diff = 0
+
+            # Find the node activation for this timestep and for this particular node:
+            activated_node_edges = np.array(labels)[np.where(grid[:len(grid)-len(nodes),t] == 1)[0]]
+            node_edge = None
+            for activated_node_edge in activated_node_edges:
+                if int(activated_node_edge.split("-")[0][1:]) == node:
+                    node_edge = activated_node_edge
+
+            # If this node is a ladder end:
+            if node_edge[0] == 'L':
+                end = node
+                start = ladder_starts[ladder_ends.index(end)]
+                diff = end - start  # Extra moves because of ladder
+                log.append(f"Now, you are on {start}, take a ladder from here.")
+
+            # If this node is a snake start:
+            if node_edge[0] == 'S':
+                # if node in snake_starts:
+                start = node
+                end = snake_starts[snake_ends.index(start)]
+                diff = start - end  # Extra (negative) moves because of snake
+                log.append(f"Now, you are on {end}, take a snake from here.")
+
+            # Get dice throw and add to history list:
+            dice = int(node_edge.split('-')[1][1:])
+            dice_throws.append(dice)
+            # Go to new node and new timestep:
+            node -= (diff + dice)
+            t -= 1
+
+            log.append(f"You throw a {dice}.")
+            if node != 0:
+                log.append(f"You are now on space {node}.")
+            else:
+                log.append("You start on space 0.")
+
+            get_all_paths(node, log, dice_throws, grid, t)
+
+        # Step case 2: there are multiple options from the current node
+        # Approach: copy activation matrix as many times as there are options,
+        # change the column for t=τ with only one activation, then recurse with
+        # this new activation matrix, without changing the value for t=τ.
+        else:
+            # Use activation matrix to get vectors with only one activation
+            id_matrix = np.eye(len(grid)-len(nodes), dtype=int)
+            # Only make single activations for the current node
+            for i, row in enumerate(id_matrix):
+                if int(labels[i].split("-")[0][1:]) != node:
+                    continue
+                activation_vector = grid[:len(grid)-len(nodes),t] & row
+                if sum(activation_vector) == 1:
+                    new_grid = grid.copy()
+                    new_row = np.hstack((activation_vector, grid[len(grid)-len(nodes):,t]))  # Make sure to include activations for B nodes
+                    new_grid[:,t] = new_row
+                    get_all_paths(node, log.copy(), dice_throws.copy(), new_grid, t)
+
+    get_all_paths(node, log, dice_throws, raster, t)
+
+    return dice_throws_list, logs
+
+
 if __name__ == "__main__":
     def list_of_ints(arg):
         return list(map(int, arg.split(',')))
@@ -152,8 +256,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--nr_cells', type=int, default=9)
     parser.add_argument('--nr_dice_sides', type=int, default=4)
-    parser.add_argument('--snake_starts', type=list_of_ints, default=[8])
-    parser.add_argument('--snake_ends', type=list_of_ints, default=[3])
+    parser.add_argument('--snake_starts', type=list_of_ints, default=[])
+    parser.add_argument('--snake_ends', type=list_of_ints, default=[])
     parser.add_argument('--ladder_starts', type=list_of_ints, default=[2])
     parser.add_argument('--ladder_ends', type=list_of_ints, default=[6])
     args = parser.parse_args()
@@ -169,7 +273,10 @@ if __name__ == "__main__":
 
     sim.run(args.nr_cells, plotting=False)
 
-    dice_throws, log = get_shortest_path(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
+    # Choose function: find one path (computationally efficient) or find more paths (computationally inefficient; requires recursion)
+    # dice_throws, log = get_shortest_path(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
+    dice_throws, log = get_all_shortest_paths(sim, args.ladder_starts, args.ladder_ends, args.snake_starts, args.snake_ends)
+
     print("Dice throws:", dice_throws, end="\n\n")
     for info in log:
         print(info)

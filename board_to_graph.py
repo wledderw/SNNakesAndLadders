@@ -82,6 +82,20 @@ def connections_to_graph(nr_cells, nr_dice_sides, connections, net, sim):
     sim.raster.addTarget(board_neurons)
 
 def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends):
+    """
+    Function that finds one shortest path.
+    - sim: the simulation object as returned by the SNN.
+    - ladder_starts: the spaces on which ladders have their starts
+    - ladder_ends: the spaces on which ladders have their ends, where each
+      ladder end index corresponds with the same index for ladder starts
+    - snake_starts: the spaces on which snakes have their starts
+    - snake_ends: the spaces on which snakes have their ends, where each
+      snake end index corresponds with the same index for snake starts
+    Returns:
+    - a list with the log.
+    - a list with the dice throws.
+    """
+
     # Get raster and label data:
     raster = np.array(sim.get_raster_data()).T
     labels = sim.raster.get_labels()
@@ -146,6 +160,20 @@ def get_shortest_path(sim, ladder_starts, ladder_ends, snake_starts, snake_ends)
 
 
 def get_all_shortest_paths(sim, ladder_starts, ladder_ends, snake_starts, snake_ends):
+    """
+    Function that finds all shortest paths.
+    - sim: the simulation object as returned by the SNN.
+    - ladder_starts: the spaces on which ladders have their starts
+    - ladder_ends: the spaces on which ladders have their ends, where each
+      ladder end index corresponds with the same index for ladder starts
+    - snake_starts: the spaces on which snakes have their starts
+    - snake_ends: the spaces on which snakes have their ends, where each
+      snake end index corresponds with the same index for snake starts
+    Returns:
+    - a list of lists with the log.
+    - a list of lists with the dice throws.
+    """
+
     # Get raster and label data:
     raster = np.array(sim.get_raster_data()).T
     labels = sim.raster.get_labels()
@@ -173,6 +201,16 @@ def get_all_shortest_paths(sim, ladder_starts, ladder_ends, snake_starts, snake_
 
 
     def get_all_paths(node, log, dice_throws, grid, t):
+        """
+        Recursive function that finds all possible shortest paths, by using the
+        node activations from the SNN.
+        - node: the current node index.
+        - log: the current log showing the moves we have taken: dice throws,
+          snake/ladder usage, spaces we have been on.
+        - dice_throws: a list with all dice throws we made.
+        - t: the current time step.
+        """
+
         # Count amount of options we have to get to the current node:
         count = 0
         for edge in edges[node]:

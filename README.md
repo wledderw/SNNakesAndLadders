@@ -1,3 +1,11 @@
+# SNN implementation of the Snakes and Ladders problem
+
+In the file `board_to_graph.py`, we made a Spiking Neural Network implementation for finding the shortest path(s) to the goal node.
+
+At the bottom of the file, there are some commands which tell how to run the program from the command line.
+
+All other files (except `simsnn/core/simulators.py`) were left untouched, and (manually) forked from [Gitlab](href{https://gitlab.socsci.ru.nl/neuromorphiccomputing/simsnn).
+
 # SimSNN
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) 

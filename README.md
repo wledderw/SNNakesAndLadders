@@ -4,7 +4,7 @@ In the file `board_to_graph.py`, we made a Spiking Neural Network implementation
 
 At the bottom of the file, there are some commands which tell how to run the program from the command line.
 
-All other files (except `simsnn/core/simulators.py`) were left untouched, and (manually) forked from [Gitlab](href{https://gitlab.socsci.ru.nl/neuromorphiccomputing/simsnn).
+All other files (except `simsnn/core/simulators.py`) were left untouched, and (manually) forked from [Gitlab](https://gitlab.socsci.ru.nl/neuromorphiccomputing/simsnn).
 
 # SimSNN
 
